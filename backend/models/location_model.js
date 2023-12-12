@@ -5,7 +5,7 @@ const location_schema = new mongoose.Schema({
     items: [
         {
             item_code: {type:String, ref:'Item'},
-            quantity: {type:Number, default:0}
+            quantity: {type:Number, required: true}
         }
     ]
 });

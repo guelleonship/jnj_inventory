@@ -13,7 +13,7 @@ const add_location = async (req, res) => {
                 location_name
             }
         );
-        res.status(200).json({ message: `${location_name} has been added as one of the locations` })
+        res.status(200).json({ message: `${location_name} has been added as one of the locations`, id: location._id })
     }
     catch (error) {
         res.status(400).json({ error: error.message });
@@ -21,8 +21,8 @@ const add_location = async (req, res) => {
 }
 
 
-//adding existing items to a specific location
-const add_item_to_location = async (req, res) => {
+//adding existing items to a specific location using item name and brand name
+const add_item_to_location_by_name_and_brand = async (req, res) => {
 
     //extract location id
     const { id } = req.params;
@@ -47,19 +47,19 @@ const add_item_to_location = async (req, res) => {
         //items parameter represents the items within a location
         const existing_item = location.items.find((items) => items.item_code === item_code);
         if (existing_item) {
-            
+
             existing_item.quantity += quantity;
             await location.save();
 
-            return res.status(200).json({ message: `${location.location_name}: ${quantity} ${item.item_name} has been added. Total Quantity: ${existing_item.quantity}` });
+            return res.status(200).json({ message: `${item.item_name} has been resupplied`, quantity: `${quantity}`, total_quantity: `${existing_item.quantity}`, location: `${location.location_name}` });
 
-        } 
+        }
         else if (!existing_item) {
-           
+
             location.items.push({ item_code: item_code, quantity: quantity });
             await location.save();
 
-            return res.status(200).json({ message: `${quantity} ${item.item_name} has been added in ${location.location_name}` });
+            return res.status(200).json({ message: `${item.item_name} successfully added`, quantity: `${quantity}`, total_quantity: `${quantity}`, location: `${location.location_name}` });
 
         }
     }
@@ -67,6 +67,49 @@ const add_item_to_location = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 
+}
+
+
+//add item to a location using item codes
+const add_item_to_location_by_code = async (req, res) => {
+
+    //extract location id
+    const { id } = req.params;
+
+    //extract item details to be added
+    const { item_code, quantity } = req.body;
+
+    try {
+        const location = await Location.findById(id);
+        const item = await Item.findOne({ item_code }); //findOne is used to find a document based from the condition
+        if (!location) {
+            return res.status(500).json({ message: "Location not found" });
+        } else if (!item) {
+            return res.status(500).json({ error: "Item not found" });
+        }
+
+        
+        let existing_item = location.items.find((items) => items.item_code === item_code);
+        if (existing_item) {
+
+            existing_item.quantity += quantity;
+            await location.save();
+
+            return res.status(200).json({ message: `${item.item_name} has been resupplied`, quantity: `${quantity}`, total_quantity: `${existing_item.quantity}`, location: `${location.location_name}` });
+
+        }
+        else if (!existing_item) {
+
+            location.items.push({ item_code: item_code, quantity: quantity });
+            await location.save();
+
+            return res.status(200).json({ message: `${item.item_name} successfully added`, quantity: `${quantity}`, total_quantity: `${quantity}`, location: `${location.location_name}` });
+
+        }
+    }
+    catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 }
 
 
@@ -108,18 +151,18 @@ const read_one_item = async (req, res) => {
         try {
 
             //extract item code
-            const {item_code} = item;
+            const { item_code } = item;
 
             //check whether the item is in the location
             const existing_item = location.items.find((items) => items.item_code === item_code);
-            if(!existing_item){
+            if (!existing_item) {
                 return res.status(400).json({ error: `${location.location_name}: Item not found` })
             }
 
-            const {item_name, brand} = item;
-            const {quantity} = existing_item;
+            const { item_name, brand } = item;
+            const { quantity } = existing_item;
 
-            return res.status(200).json({item_name, brand, quantity, item_code});
+            return res.status(200).json({ item_name, brand, quantity, item_code });
 
         }
         catch (error) {
@@ -134,4 +177,11 @@ const read_one_item = async (req, res) => {
 
 }
 
-module.exports = { add_location, add_item_to_location, read_all_items, read_one_item };
+module.exports =
+{
+    add_location,
+    add_item_to_location_by_name_and_brand, 
+    add_item_to_location_by_code,
+    read_all_items, 
+    read_one_item
+};

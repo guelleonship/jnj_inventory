@@ -1,6 +1,6 @@
 
 Current Progress:
-Delete an amount (deduct once item has been shipped)
+Read all items in root path item
 
 
 Next Task:
@@ -8,8 +8,11 @@ Decide whether quantities are added when items are added in general or only when
 
 ✅ Get all items in a specific location
 ✅ Get a specific item in a location
-✅when adding new items, check whether the item is already existing
+✅ when adding new items, check whether the item is already existing
+✅ add an item to a location using item codes | location_controller line 73
 
+
+Delete an amount (deduct once item has been shipped)
 
 
 
