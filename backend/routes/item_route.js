@@ -1,4 +1,4 @@
-const {add_item, grab_item, update_item} = require("../controllers/item_controller");
+const {add_item, grab_item, update_item, delete_item} = require("../controllers/item_controller");
 
 const router = require("express").Router();
 
@@ -10,5 +10,8 @@ router.get("/", grab_item);
 
 //define endpoint for updating an item
 router.patch("/update", update_item);
+
+//define endpoint for deleting an item
+router.delete("/delete", delete_item);
 
 module.exports = router;

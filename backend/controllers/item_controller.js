@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 
 const add_item = async (req, res) => {
     //extract product details from user input
-    const { item_name, brand } = req.body;
+    const { item_name, brand, price } = req.body;
 
     try {
 
@@ -16,15 +16,16 @@ const add_item = async (req, res) => {
         const item = await Item.create(
             {
                 item_name,
-                brand
+                brand,
+                price
             }
         );
 
-        res.status(200).json({ message: `Product ${item_name} has been added`, item_code: `${item.item_code}` })
+       return res.status(200).json({ message: `Product has been added`, item_name: `${item_name}`, price: `${price}`, item_code: `${item.item_code}` });
 
     }
     catch (error) {
-        res.status(400).json({ error: error.message });
+        return res.status(400).json({ error: error.message });
     }
 }
 
@@ -39,6 +40,7 @@ const grab_item = async (req, res) => {
     }
 }
 
+//update an item
 const update_item = async (req, res) => {
 
     const { item_code } = req.body;
@@ -50,7 +52,7 @@ const update_item = async (req, res) => {
         );
 
         if(updated_item.modifiedCount === 1){
-            return res.status(200).json({updated_item});
+            return res.status(200).json({message: "Product has been updated"});
         } else {
             return res.status(400).json({error: "Updating of product failed"})
         }       
@@ -61,4 +63,20 @@ const update_item = async (req, res) => {
 
 }
 
-module.exports = { add_item, grab_item, update_item }
+//delete an item
+const delete_item = async (req,res) => {
+
+    const {item_code} = req.body;
+    const item = await Item.findOne({item_code:item_code}, 'item_name brand' );
+
+    try {
+        await Item.deleteOne({item_code: item_code});
+        return res.status(200).json({message: `Product has been deleted in the system`, product: `${item.item_name}`, brand: `${item.brand}`});
+    }
+    catch (error) {
+        return res.status(500).json({ error: error.message });
+    }
+}
+
+
+module.exports = { add_item, grab_item, update_item, delete_item};
