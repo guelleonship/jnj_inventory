@@ -20,6 +20,19 @@ const add_location = async (req, res) => {
     }
 }
 
+//grab all locations added
+const grab_location = async (req,res) => {
+
+    try{
+        const locations = await Location.find({}, '_id location_name'); //displaying only the id and the location_name values
+        return res.status(200).json({locations});
+    }
+    catch (error) {
+       return res.status(500).json({ error: error.message });
+    }
+
+}
+
 
 //adding existing items to a specific location using item name and brand name
 const add_item_to_location_by_name_and_brand = async (req, res) => {
@@ -42,7 +55,7 @@ const add_item_to_location_by_name_and_brand = async (req, res) => {
         //extracting item code based from item name and brand using the item variable from the imported Item data model
         const item_code = item.item_code;
 
-        //exisiting_item is the item inside a location. this is to check whether an item is already registered in a location using the item_code of the Item data model
+        //existing_item is the item inside a location. this is to check whether an item is already registered in a location using the item_code of the Item data model
         //.find : search for a specific element in an array based on a condition.
         //items parameter represents the items within a location
         const existing_item = location.items.find((items) => items.item_code === item_code);
@@ -180,6 +193,7 @@ const read_one_item = async (req, res) => {
 module.exports =
 {
     add_location,
+    grab_location,
     add_item_to_location_by_name_and_brand, 
     add_item_to_location_by_code,
     read_all_items, 
