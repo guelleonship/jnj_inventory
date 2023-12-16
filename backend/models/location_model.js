@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 
 const location_schema = new mongoose.Schema({
-    location_name: {type:String, required:true, unique:true},
+    location_name: { type: String, required: true, unique: true },
     items: [
         {
-            item_code: {type:String, ref:'Item'},
-            quantity: {type:Number, required: true}
+            item_code: { type: mongoose.Schema.Types.ObjectId, ref: 'Item' },
+            quantity: { type: Number, required: true }
         }
     ]
 });

@@ -5,28 +5,23 @@ const item_schema = new mongoose.Schema(
         item_name: { type: String, required: true },
         brand: { type: String, required: true },
         price: { type: Number },
-        item_code: { type: String }
+        item_code: { type: String, unique:true }
     }, { timestamps: true }
 )
 
 //middleware to automatically generate item code
 //we are using an anonymous function as arrow function has issues using the "this" keyword
 item_schema.pre('save', function (next) {
-    //extracts the first three letters of product name
-    const name_code = this.item_name.slice(0, 5).toUpperCase();
-
-    //extracts the first three letters of the brand
-    const brand_code = this.brand.slice(0, 5).toUpperCase();
-
+    
     //getting the time string
     const current_date = new Date();
     const timezone = { timeZone: 'Asia/Manila' };
 
     //notes below
-    const time_code = current_date.toLocaleString('en-US', { ...timezone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/[^0-9]/g, '');
+    const time_code = current_date.toLocaleString('en-US', { ...timezone, hour: '2-digit', minute: '2-digit', second: '2-digit',hour12: false }).replace(/[^0-9]/g, '') + current_date.getMilliseconds().toLocaleString();
     const date_code = current_date.toLocaleString('en-US', { ...timezone, month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/[^0-9]/g, '');
 
-    this.item_code = `${name_code}${brand_code}${date_code.slice(0, 4)}${date_code.substring(6)}${time_code}`;
+    this.item_code = `${date_code.slice(0, 4)}${date_code.substring(6)}${time_code}`;
     next();
 }
 );

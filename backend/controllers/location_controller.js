@@ -13,7 +13,7 @@ const add_location = async (req, res) => {
                 location_name
             }
         );
-        res.status(200).json({ message: `${location_name} has been added as one of the locations`, id: location._id })
+        res.status(200).json({ message: `${location_name} has been added as one of the locations` })
     }
     catch (error) {
         res.status(400).json({ error: error.message });
@@ -21,14 +21,14 @@ const add_location = async (req, res) => {
 }
 
 //grab all locations added
-const grab_location = async (req,res) => {
+const grab_location = async (req, res) => {
 
-    try{
+    try {
         const locations = await Location.find({}, '_id location_name'); //displaying only the id and the location_name values
-        return res.status(200).json({locations});
+        return res.status(200).json({ locations });
     }
     catch (error) {
-       return res.status(500).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
     }
 
 }
@@ -36,14 +36,11 @@ const grab_location = async (req,res) => {
 //adding existing items to a specific location using item name and brand name
 const add_item_to_location_by_name_and_brand = async (req, res) => {
 
-    //extract location id
-    const { id } = req.params;
-
     //extract item details to be added
-    const { item_name, brand, quantity } = req.body;
+    const { location_name, item_name, brand, quantity } = req.body;
 
     try {
-        const location = await Location.findById(id);
+        const location = await Location.findOne({ location_name: location_name });
         const item = await Item.findOne({ item_name, brand }); //findOne is used to find a document based from the condition
         if (!location) {
             return res.status(500).json({ message: "Location not found" });
@@ -81,7 +78,6 @@ const add_item_to_location_by_name_and_brand = async (req, res) => {
 
 }
 
-
 //add item to a location using item codes
 const add_item_to_location_by_code = async (req, res) => {
 
@@ -89,7 +85,7 @@ const add_item_to_location_by_code = async (req, res) => {
     const { location_name, item_code, quantity } = req.body;
 
     try {
-        const location = await Location.findOne({location_name:location_name});        
+        const location = await Location.findOne({ location_name: location_name });
         const item = await Item.findOne({ item_code }); //findOne is used to find a document based from the condition
         if (!location) {
             return res.status(500).json({ message: "Location not found" });
@@ -97,7 +93,7 @@ const add_item_to_location_by_code = async (req, res) => {
             return res.status(500).json({ error: "Item not found" });
         }
 
-        
+
         let existing_item = location.items.find((items) => items.item_code === item_code);
         if (existing_item) {
 
@@ -109,7 +105,7 @@ const add_item_to_location_by_code = async (req, res) => {
         }
         else if (!existing_item) {
 
-            location.items.push({ item_code: item_code, quantity: quantity });
+            location.items.push({ item_code: new mongoose.Types.ObjectId(item_code), quantity: quantity }); // making the item_code an object id for referencing
             await location.save();
 
             return res.status(200).json({ message: `${item.item_name} successfully added`, quantity: `${quantity}`, total_quantity: `${quantity}`, location: `${location.location_name}` });
@@ -126,13 +122,13 @@ const add_item_to_location_by_code = async (req, res) => {
 const read_all_items = async (req, res) => {
 
     //extract id of location
-    const { id } = req.params;
+    const { location_name } = req.body;
 
     try {
-        const location = await Location.findById(id);
+        const location = await Location.findOne({ location_name: location_name });
         const items = location.items;
 
-        return res.status(200).json(items);
+        return res.status(200).json({ items });
     }
     catch (error) {
         res.status(500).json({ error: error.message });
@@ -144,38 +140,32 @@ const read_all_items = async (req, res) => {
 //grab an item of a location
 const read_one_item = async (req, res) => {
 
-    //extract id of location
-    const { id } = req.params;
+    //extract item details from user input
+    const { location_name, item_code } = req.body;
 
     try {
         //extract the location
-        const location = await Location.findById(id);
-
-        //extract item details from user input
-        const { item_name, brand, quantity } = req.body;
+        const location = await Location.findOne({ location_name: location_name });
 
         //grab the document that satisfies the condition
-        const item = await Item.findOne({ item_name, brand });
+        const item = await Location.findOne({location_name: location_name, 'items.item_code': item_code});
 
         try {
-
-            //extract item code
-            const { item_code } = item;
 
             //check whether the item is in the location
             const existing_item = location.items.find((items) => items.item_code === item_code);
             if (!existing_item) {
-                return res.status(400).json({ error: `${location.location_name}: Item not found` })
+                return res.status(400).json({ error: `Item not found`, location: `${location.location_name}` })
             }
 
-            const { item_name, brand } = item;
+            const populatedLocation = await Location.findOne({ 'items.item_code': item_code }).populate('items.item_code', 'item_name brand');
             const { quantity } = existing_item;
 
-            return res.status(200).json({ item_name, brand, quantity, item_code });
+            return res.status(200).json({ item_code: `${item.item_code}`, item_name: `${populatedLocation[0]}`, brand:`${populatedLocation[1]}`, quantity: `${quantity}` });
 
         }
         catch (error) {
-            res.status(400).json({ error: `Item not registered` });
+            res.status(400).json({ error: error.message });
         }
 
     }
@@ -190,8 +180,8 @@ module.exports =
 {
     add_location,
     grab_location,
-    add_item_to_location_by_name_and_brand, 
+    add_item_to_location_by_name_and_brand,
     add_item_to_location_by_code,
-    read_all_items, 
+    read_all_items,
     read_one_item
 };

@@ -23,9 +23,9 @@ router.patch("/:id/name", add_item_to_location_by_name_and_brand);
 router.patch("/code", add_item_to_location_by_code);
 
 //define endpoint for reading all items of a specific location
-router.get("/:id", read_all_items)
+router.get("/all_items", read_all_items)
 
 //define endpoint for reading all items of a specific location
-router.get("/:id/search_item", read_one_item)
+router.get("/one_item", read_one_item)
 
 module.exports = router;
