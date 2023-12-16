@@ -4,7 +4,7 @@ const item_schema = new mongoose.Schema(
     {
         item_name: { type: String, required: true },
         brand: { type: String, required: true },
-        price: {type: Number, required: true},
+        price: { type: Number },
         item_code: { type: String }
     }, { timestamps: true }
 )
@@ -23,7 +23,7 @@ item_schema.pre('save', function (next) {
     const timezone = { timeZone: 'Asia/Manila' };
 
     //notes below
-    const time_code = current_date.toLocaleString('en-US', { ...timezone, hour: '2-digit', minute: '2-digit', second: '2-digit' }).replace(/[^0-9]/g, '');
+    const time_code = current_date.toLocaleString('en-US', { ...timezone, hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).replace(/[^0-9]/g, '');
     const date_code = current_date.toLocaleString('en-US', { ...timezone, month: '2-digit', day: '2-digit', year: 'numeric' }).replace(/[^0-9]/g, '');
 
     this.item_code = `${name_code}${brand_code}${date_code.slice(0, 4)}${date_code.substring(6)}${time_code}`;
@@ -40,9 +40,11 @@ module.exports = mongoose.model('Item', item_schema);
 
 //.toLocaleString : This method converts the date and time to a string representation using the specified options.
 
-//string representation: refers to the way in which a particular data type or object is expressed as a sequence of characters (i.e., a string). For example, when working with dates and times, the string representation might include the day, month, year, and time in a specific format. 
+//string representation: refers to the way in which a particular data type or object is expressed as a sequence of characters (i.e., a string). For example, when working with dates and times, the string representation might include the day, month, year, and time in a specific format.
 
 //{ ...timezone, hour: '2-digit' ...} : This is an options object passed to toLocaleString. It specifies additional formatting options, including the time zone, and sets the format for the hour, minute, and second to '2-digit' (ensuring two digits for each component).
+
+//hour12:false : uses military time
 
 //numeric : means representing the value as a number
 

@@ -1,6 +1,7 @@
 const Item = require("../models/item_model");
 const mongoose = require("mongoose");
 
+//adding a new record 
 const add_item = async (req, res) => {
     //extract product details from user input
     const { item_name, brand, price } = req.body;
@@ -21,7 +22,7 @@ const add_item = async (req, res) => {
             }
         );
 
-       return res.status(200).json({ message: `Product has been added`, item_name: `${item_name}`, price: `${price}`, item_code: `${item.item_code}` });
+       return res.status(200).json({ message: `Product has been added`, item_name: `${item_name}`, brand: `${item.brand}`, price: `${price}`, item_code: `${item.item_code}` });
 
     }
     catch (error) {
@@ -29,10 +30,11 @@ const add_item = async (req, res) => {
     }
 }
 
+//grab all items 
 const grab_item = async (req, res) => {
 
     try {
-        const items = await Item.find({}, 'item_code item_name brand'); //specifying teh fields to be displayed
+        const items = await Item.find({}, 'item_name brand price item_code'); //specifying the fields to be displayed
         return res.status(200).json({ items });
     }
     catch (error) {
@@ -40,7 +42,7 @@ const grab_item = async (req, res) => {
     }
 }
 
-//update an item
+//update an item using the item code
 const update_item = async (req, res) => {
 
     const { item_code } = req.body;
@@ -63,7 +65,7 @@ const update_item = async (req, res) => {
 
 }
 
-//delete an item
+//delete an item using the item code 
 const delete_item = async (req,res) => {
 
     const {item_code} = req.body;
