@@ -33,6 +33,7 @@ const grab_location = async (req, res) => {
 
 }
 
+/*
 //adding existing items to a specific location using item name and brand name
 const add_item_to_location_by_name_and_brand = async (req, res) => {
 
@@ -77,6 +78,7 @@ const add_item_to_location_by_name_and_brand = async (req, res) => {
     }
 
 }
+*/
 
 //add item to a location using item codes
 const add_item_to_location_by_code = async (req, res) => {
@@ -105,7 +107,7 @@ const add_item_to_location_by_code = async (req, res) => {
         }
         else if (!existing_item) {
 
-            location.items.push({ item_code: new mongoose.Types.ObjectId(item_code), quantity: quantity }); // making the item_code an object id for referencing
+            location.items.push({ item_code: item_code, quantity: quantity }); // making the item_code an object id for referencing
             await location.save();
 
             return res.status(200).json({ message: `${item.item_name} successfully added`, quantity: `${quantity}`, total_quantity: `${quantity}`, location: `${location.location_name}` });
@@ -148,7 +150,7 @@ const read_one_item = async (req, res) => {
         const location = await Location.findOne({ location_name: location_name });
 
         //grab the document that satisfies the condition
-        const item = await Location.findOne({location_name: location_name, 'items.item_code': item_code});
+        const item = await Location.findOne({ location_name: location_name, 'items.item_code': item_code });
 
         try {
 
@@ -158,10 +160,10 @@ const read_one_item = async (req, res) => {
                 return res.status(400).json({ error: `Item not found`, location: `${location.location_name}` })
             }
 
-            const populatedLocation = await Location.findOne({ 'items.item_code': item_code }).populate('items.item_code', 'item_name brand');
+            const populatedLocation = await Location.findOne({ 'items.item_code': mongoose.Types.ObjectId(item_code) }).populate('items.item_code', 'item_name brand');
             const { quantity } = existing_item;
 
-            return res.status(200).json({ item_code: `${item.item_code}`, item_name: `${populatedLocation[0]}`, brand:`${populatedLocation[1]}`, quantity: `${quantity}` });
+            return res.status(200).json({ item_code: `${item.item_code}`, item_name: `${populatedLocation.items.item_code.item_name}`, brand: `${populatedLocation.items.item_code.brand}`, quantity: `${quantity}` });
 
         }
         catch (error) {
@@ -180,7 +182,7 @@ module.exports =
 {
     add_location,
     grab_location,
-    add_item_to_location_by_name_and_brand,
+    //add_item_to_location_by_name_and_brand,
     add_item_to_location_by_code,
     read_all_items,
     read_one_item
