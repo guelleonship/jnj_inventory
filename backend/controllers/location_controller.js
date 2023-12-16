@@ -50,12 +50,12 @@ const add_item_to_location_by_name_and_brand = async (req, res) => {
         }
 
         //extracting item code based from item name and brand using the item variable from the imported Item data model
-        const item_code = item.item_code;
+        const item_id = item.item_id;
 
-        //existing_item is the item inside a location. this is to check whether an item is already registered in a location using the item_code of the Item data model
+        //existing_item is the item inside a location. this is to check whether an item is already registered in a location using the item_id of the Item data model
         //.find : search for a specific element in an array based on a condition.
         //items parameter represents the items within a location
-        const existing_item = location.items.find((items) => items.item_code === item_code);
+        const existing_item = location.items.find((items) => items.item_id === item_id);
         if (existing_item) {
 
             existing_item.quantity += quantity;
@@ -66,7 +66,7 @@ const add_item_to_location_by_name_and_brand = async (req, res) => {
         }
         else if (!existing_item) {
 
-            location.items.push({ item_code: item_code, quantity: quantity });
+            location.items.push({ item_id: item_id, quantity: quantity });
             await location.save();
 
             return res.status(200).json({ message: `${item.item_name} successfully added`, quantity: `${quantity}`, total_quantity: `${quantity}`, location: `${location.location_name}` });
@@ -84,11 +84,11 @@ const add_item_to_location_by_name_and_brand = async (req, res) => {
 const add_item_to_location_by_code = async (req, res) => {
 
     //extract the location and item details to be added
-    const { location_name, item_code, quantity } = req.body;
+    const { location_name, item_id, quantity } = req.body;
 
     try {
         const location = await Location.findOne({ location_name: location_name });
-        const item = await Item.findOne({ item_code }); //findOne is used to find a document based from the condition
+        const item = await Item.findById({ _id: item_id }); //findOne is used to find a document based from the condition
         if (!location) {
             return res.status(500).json({ message: "Location not found" });
         } else if (!item) {
@@ -96,7 +96,7 @@ const add_item_to_location_by_code = async (req, res) => {
         }
 
 
-        let existing_item = location.items.find((items) => items.item_code === item_code);
+        let existing_item = location.items.find((items) => items._id === item_id);
         if (existing_item) {
 
             existing_item.quantity += quantity;
@@ -107,7 +107,7 @@ const add_item_to_location_by_code = async (req, res) => {
         }
         else if (!existing_item) {
 
-            location.items.push({ item_code: item_code, quantity: quantity }); // making the item_code an object id for referencing
+            location.items.push({ _id: item_id, quantity: quantity });
             await location.save();
 
             return res.status(200).json({ message: `${item.item_name} successfully added`, quantity: `${quantity}`, total_quantity: `${quantity}`, location: `${location.location_name}` });
@@ -143,27 +143,32 @@ const read_all_items = async (req, res) => {
 const read_one_item = async (req, res) => {
 
     //extract item details from user input
-    const { location_name, item_code } = req.body;
+    const { location_name, item_id } = req.body;
 
     try {
         //extract the location
         const location = await Location.findOne({ location_name: location_name });
 
-        //grab the document that satisfies the condition
-        const item = await Location.findOne({ location_name: location_name, 'items.item_code': item_code });
+        //grab the location document that has the searched item
+        const item = await Location.findOne({ location_name: location_name, 'items._id': item_id });
+
+        console.log(`item: ${item}`);
 
         try {
 
             //check whether the item is in the location
-            const existing_item = location.items.find((items) => items.item_code === item_code);
+            //returns an element of the items array
+            const existing_item = location.items.find((items) => items._id.toString() === item_id);
+
+            console.log(`existing_item: ${existing_item}`);
+
             if (!existing_item) {
                 return res.status(400).json({ error: `Item not found`, location: `${location.location_name}` })
             }
 
-            const populatedLocation = await Location.findOne({ 'items.item_code': mongoose.Types.ObjectId(item_code) }).populate('items.item_code', 'item_name brand');
-            const { quantity } = existing_item;
+            //const { quantity } = existing_item;
 
-            return res.status(200).json({ item_code: `${item.item_code}`, item_name: `${populatedLocation.items.item_code.item_name}`, brand: `${populatedLocation.items.item_code.brand}`, quantity: `${quantity}` });
+            return res.status(200).json();
 
         }
         catch (error) {
