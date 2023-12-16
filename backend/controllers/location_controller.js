@@ -33,7 +33,6 @@ const grab_location = async (req,res) => {
 
 }
 
-
 //adding existing items to a specific location using item name and brand name
 const add_item_to_location_by_name_and_brand = async (req, res) => {
 
@@ -86,14 +85,11 @@ const add_item_to_location_by_name_and_brand = async (req, res) => {
 //add item to a location using item codes
 const add_item_to_location_by_code = async (req, res) => {
 
-    //extract location id
-    const { id } = req.params;
-
-    //extract item details to be added
-    const { item_code, quantity } = req.body;
+    //extract the location and item details to be added
+    const { location_name, item_code, quantity } = req.body;
 
     try {
-        const location = await Location.findById(id);
+        const location = await Location.findOne({location_name:location_name});        
         const item = await Item.findOne({ item_code }); //findOne is used to find a document based from the condition
         if (!location) {
             return res.status(500).json({ message: "Location not found" });

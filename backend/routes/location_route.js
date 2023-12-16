@@ -20,7 +20,7 @@ router.get("/", grab_location);
 router.patch("/:id/name", add_item_to_location_by_name_and_brand);
 
 //define endpoint for adding an item to a specific location using item code
-router.patch("/:id/code", add_item_to_location_by_code);
+router.patch("/code", add_item_to_location_by_code);
 
 //define endpoint for reading all items of a specific location
 router.get("/:id", read_all_items)
